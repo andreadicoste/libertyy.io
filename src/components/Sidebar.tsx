@@ -18,29 +18,26 @@ export function Sidebar() {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Logo */}
-      <div className="flex h-16 items-center border-b border-sidebar-border px-6">
-        <h1 className="text-xl font-bold text-sidebar-foreground">libertyy.io</h1>
+    <div className="flex h-screen w-64 flex-col bg-[#f2f2f2] border-r border-neutral-200">
+      <div className="flex h-16 items-center border-b border-neutral-200 px-6">
+        <h1 className="text-xl font-bold text-[#8C00D8] tracking-tight">libertyy.io</h1>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 px-3 py-4 text-neutral-800">
         <Button
           variant="ghost"
-          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="w-full justify-start text-neutral-800 hover:bg-neutral-200 hover:text-neutral-900"
         >
           <LayoutDashboard className="mr-3 h-5 w-5" />
           Dashboard
         </Button>
       </nav>
 
-      {/* Logout Button */}
-      <div className="border-t border-sidebar-border p-3">
+      <div className="border-t border-neutral-200 p-3">
         <Button
           variant="ghost"
           onClick={handleLogout}
-          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="w-full justify-start text-neutral-800 hover:bg-neutral-200 hover:text-neutral-900"
         >
           <LogOut className="mr-3 h-5 w-5" />
           Logout

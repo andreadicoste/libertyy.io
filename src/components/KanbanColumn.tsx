@@ -7,9 +7,10 @@ interface KanbanColumnProps {
   stage: string;
   title: string;
   contacts: Contact[];
+  onContactSelect: (contact: Contact) => void;
 }
 
-export function KanbanColumn({ stage, title, contacts }: KanbanColumnProps) {
+export function KanbanColumn({ stage, title, contacts, onContactSelect }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({ id: stage });
 
   return (
@@ -24,7 +25,7 @@ export function KanbanColumn({ stage, title, contacts }: KanbanColumnProps) {
       <div ref={setNodeRef} className="flex-1 space-y-3 min-h-[200px]">
         <SortableContext items={contacts.map(c => c.id)} strategy={verticalListSortingStrategy}>
           {contacts.map((contact) => (
-            <SortableContactCard key={contact.id} contact={contact} />
+            <SortableContactCard key={contact.id} contact={contact} onContactSelect={onContactSelect} />
           ))}
         </SortableContext>
       </div>
