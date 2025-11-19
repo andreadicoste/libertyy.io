@@ -81,24 +81,7 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 space-y-3">
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={async () => {
-                const { error } = await supabase.auth.signInWithOAuth({
-                  provider: 'google',
-                  options: {
-                    redirectTo: window.location.origin,
-                  },
-                });
-
-                if (error) toast.error(error.message);
-              }}
-            >
-              Continua con Google
-            </Button>
-
+          <div className="mt-6">
             <Button
               type="button"
               variant="outline"
