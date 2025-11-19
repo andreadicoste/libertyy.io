@@ -3,8 +3,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { ContactsTable } from '@/components/ContactsTable';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/useAuth';
-import { Contact, Profile } from '@/types/database';
+import { Contact } from '@/types/database';
 import { toast } from 'sonner';
 import { Search } from 'lucide-react';
 import { ContactDetailModal } from '@/components/ContactDetailModal';
@@ -15,11 +14,11 @@ import { ContactFilters } from '@/types/filters';
 import { FilterMenu } from '@/components/FilterMenu';
 import { ExportButton } from '@/components/ExportButton';
 import { exportContactsToCSV } from '@/utils/exportContactsToCSV';
+import { ImportContactsModal } from '@/components/ImportContactsModal';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function Dashboard() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { profile, loading } = useProfile();
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactsLoading, setContactsLoading] = useState(true);
@@ -34,29 +33,6 @@ export default function Dashboard() {
     createdTo: '',
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!user) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (error) throw error;
-        setProfile(data);
-      } catch (error: unknown) {
-        toast.error('Errore nel caricamento del profilo');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [user]);
 
   const loadContacts = useCallback(async () => {
     if (!profile?.company_id) return;
@@ -162,31 +138,37 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-muted-foreground">Caricamento dashboard...</div>
+      <div className="min-h-screen bg-background">
+        <Sidebar />
+        <main className="ml-64 flex min-h-screen items-center justify-center">
+          <div className="text-muted-foreground">Caricamento contatti...</div>
+        </main>
       </div>
     );
   }
 
   if (!profile?.company_id) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-foreground mb-2">Nessuna azienda associata</h2>
-          <p className="text-muted-foreground">Contatta l'amministratore del sistema.</p>
-        </div>
+      <div className="min-h-screen bg-background">
+        <Sidebar />
+        <main className="ml-64 flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <h2 className="mb-2 text-xl font-semibold text-foreground">Nessuna azienda associata</h2>
+            <p className="text-muted-foreground">Contatta l'amministratore del sistema.</p>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-x-hidden">
-        <div className="p-8 space-y-8">
+      <main className="ml-64 min-h-screen overflow-x-hidden">
+        <div className="space-y-8 p-8">
           <div className="space-y-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">CRM</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Contatti</p>
               <h1 className="mt-2 text-3xl font-semibold text-foreground">Gestisci la pipeline o la tabella contatti</h1>
             </div>
             <ViewToggle value={viewMode} onChange={setViewMode} />
@@ -197,12 +179,17 @@ export default function Dashboard() {
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CreateContactModal companyId={profile.company_id} onContactCreated={loadContacts} />
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+            <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-end">
               <div className="flex items-center gap-2">
+                <ImportContactsModal
+                  companyId={profile.company_id}
+                  existingContacts={contacts}
+                  onContactsImported={loadContacts}
+                />
                 <ExportButton onExport={handleExport} disabled={contactsLoading} />
                 <FilterMenu filters={filters} onChange={setFilters} />
               </div>
-              <div className="relative w-full sm:w-72">
+              <div className="relative w-full md:w-72">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={searchTerm}

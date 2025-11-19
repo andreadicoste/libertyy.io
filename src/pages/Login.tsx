@@ -17,7 +17,7 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/contatti');
     }
   }, [user, navigate]);
 
@@ -34,7 +34,7 @@ export default function Login() {
       if (error) throw error;
 
       toast.success('Login effettuato con successo');
-      navigate('/dashboard');
+      navigate('/contatti');
     } catch (error: any) {
       toast.error(error.message || 'Errore durante il login');
     } finally {

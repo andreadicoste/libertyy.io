@@ -9,19 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 
 export default function Signup() {
-  const [formData, setFormData] = useState({
-    name: '',
-    companyName: '',
-    email: '',
-    password: '',
-  });
+  const [fullName, setFullName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/contatti');
     }
   }, [user, navigate]);
 
@@ -30,15 +28,21 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      if (!fullName.trim() || !companyName.trim()) {
+        toast.error('Inserisci nome completo e nome azienda');
+        setLoading(false);
+        return;
+      }
+
+      const redirectUrl = `${window.location.origin}/contatti`;
       
       const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+        email,
+        password,
         options: {
           data: {
-            company_name: formData.companyName,
-            name: formData.name,
+            full_name: fullName.trim(),
+            company_name: companyName.trim(),
           },
           emailRedirectTo: redirectUrl,
         },
@@ -71,22 +75,23 @@ export default function Signup() {
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="fullName">Nome completo *</Label>
               <Input
-                id="name"
+                id="fullName"
                 placeholder="Mario Rossi"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="companyName">Nome Azienda *</Label>
+              <Label htmlFor="companyName">Nome azienda *</Label>
               <Input
                 id="companyName"
                 placeholder="La Mia Azienda"
-                value={formData.companyName}
-                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
                 required
               />
             </div>
@@ -97,8 +102,8 @@ export default function Signup() {
                 id="email"
                 type="email"
                 placeholder="mario@esempio.it"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -109,8 +114,8 @@ export default function Signup() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
               />
