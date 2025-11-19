@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,24 +13,24 @@ export default function Signup() {
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { profile, loading } = useProfile();
 
   useEffect(() => {
-    if (user) {
+    if (!loading && profile) {
       navigate('/contatti');
     }
-  }, [user, navigate]);
+  }, [profile, loading, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       if (!fullName.trim() || !companyName.trim()) {
         toast.error('Inserisci nome completo e nome azienda');
-        setLoading(false);
+        setSubmitting(false);
         return;
       }
 
@@ -59,7 +59,7 @@ export default function Signup() {
         toast.error(error.message || 'Errore durante la registrazione');
       }
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -121,8 +121,8 @@ export default function Signup() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Registrazione in corso...' : 'Registrati'}
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? 'Registrazione in corso...' : 'Registrati'}
             </Button>
           </form>
 

@@ -8,6 +8,7 @@ import { Contact } from '@/types/database';
 import { ImportCounts, ImportPreviewRow } from '@/types/import';
 import { parseContactsCSV } from '@/utils/parseContactsCSV';
 import { cn } from '@/lib/utils';
+import { useProfile } from '@/hooks/useProfile';
 
 const INITIAL_COUNTS: ImportCounts = {
   valid: 0,
@@ -17,7 +18,6 @@ const INITIAL_COUNTS: ImportCounts = {
 };
 
 interface ImportContactsModalProps {
-  companyId: string;
   existingContacts: Contact[];
   onContactsImported: () => void;
 }
@@ -40,7 +40,7 @@ const statusConfig = {
   },
 } as const;
 
-export function ImportContactsModal({ companyId, existingContacts, onContactsImported }: ImportContactsModalProps) {
+export function ImportContactsModal({ existingContacts, onContactsImported }: ImportContactsModalProps) {
   const [open, setOpen] = useState(false);
   const [previewRows, setPreviewRows] = useState<ImportPreviewRow[]>([]);
   const [counts, setCounts] = useState<ImportCounts>(INITIAL_COUNTS);
@@ -49,6 +49,7 @@ export function ImportContactsModal({ companyId, existingContacts, onContactsImp
   const [selectedFileName, setSelectedFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { profile } = useProfile();
 
   const validRows = useMemo(() => previewRows.filter(row => row.status === 'valid'), [previewRows]);
 
@@ -68,9 +69,14 @@ export function ImportContactsModal({ companyId, existingContacts, onContactsImp
     setParsing(true);
     try {
       setSelectedFileName(file.name);
+      if (!profile?.company_id) {
+        toast.error('Nessuna azienda associata');
+        setParsing(false);
+        return;
+      }
       const { rows, counts: newCounts } = await parseContactsCSV({
         file,
-        companyId,
+        companyId: profile.company_id,
         existingContacts,
       });
 
@@ -111,6 +117,10 @@ export function ImportContactsModal({ companyId, existingContacts, onContactsImp
 
   const handleImport = async () => {
     if (validRows.length === 0) return;
+    if (!profile?.company_id) {
+      toast.error('Nessuna azienda associata');
+      return;
+    }
     setImporting(true);
     try {
       const payload = validRows.map(row => row.payload);

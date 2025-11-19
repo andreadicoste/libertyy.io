@@ -14,11 +14,11 @@ import { Loader2, Upload } from 'lucide-react';
 import { EditorToolbar } from '@/components/EditorToolbar';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import DOMPurify from 'dompurify';
+import { useProfile } from '@/hooks/useProfile';
 
 interface CMSArticleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  companyId: string;
   article?: Article | null;
   onCompleted: () => void;
 }
@@ -49,7 +49,7 @@ const parseTags = (value: string) =>
     .map(tag => tag.trim())
     .filter(Boolean);
 
-export function CMSArticleModal({ open, onOpenChange, companyId, article, onCompleted }: CMSArticleModalProps) {
+export function CMSArticleModal({ open, onOpenChange, article, onCompleted }: CMSArticleModalProps) {
   const [form, setForm] = useState<FormState>(defaultFormState);
   const [autoSlug, setAutoSlug] = useState(true);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -60,6 +60,8 @@ export function CMSArticleModal({ open, onOpenChange, companyId, article, onComp
   const [deleteLoading, setDeleteLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const { profile } = useProfile();
+  const companyId = profile?.company_id;
 
   const isEdit = Boolean(article);
 
@@ -146,6 +148,10 @@ export function CMSArticleModal({ open, onOpenChange, companyId, article, onComp
   const handleSubmit = async (targetStatus: ArticleStatus) => {
     if (!form.title.trim()) {
       toast.error('Il titolo è obbligatorio');
+      return;
+    }
+    if (!companyId) {
+      toast.error('Nessuna azienda associata');
       return;
     }
 

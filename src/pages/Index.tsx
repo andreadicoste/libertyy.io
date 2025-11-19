@@ -1,20 +1,19 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { profile, loading } = useProfile();
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        navigate('/contatti');
-      } else {
-        navigate('/login');
-      }
+    if (loading) return;
+    if (profile) {
+      navigate('/contatti');
+    } else {
+      navigate('/login');
     }
-  }, [user, loading, navigate]);
+  }, [profile, loading, navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">

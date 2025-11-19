@@ -9,15 +9,16 @@ import { Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { STAGES } from '@/constants/stages';
+import { useProfile } from '@/hooks/useProfile';
 
 interface CreateContactModalProps {
-  companyId: string;
   onContactCreated: () => void;
 }
 
-export function CreateContactModal({ companyId, onContactCreated }: CreateContactModalProps) {
+export function CreateContactModal({ onContactCreated }: CreateContactModalProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { company } = useProfile();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,8 +35,13 @@ export function CreateContactModal({ companyId, onContactCreated }: CreateContac
     setLoading(true);
 
     try {
+      if (!company?.id) {
+        toast.error('Nessuna azienda associata');
+        setLoading(false);
+        return;
+      }
       const payload = {
-        company_id: companyId,
+        company_id: company.id,
         name: formData.name.trim(),
         email: formData.email.trim() || null,
         phone: formData.phone.trim() || null,

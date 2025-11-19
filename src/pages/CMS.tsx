@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { Profile, Article } from '@/types/database';
+import { Article } from '@/types/database';
 import { toast } from 'sonner';
 import { CMSArticleModal } from '@/components/CMSArticleModal';
 import { ArticleCard } from '@/components/ArticleCard';
@@ -10,43 +9,24 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function CMSPage() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const { profile, company, loading: profileLoading } = useProfile();
   const [articles, setArticles] = useState<Article[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      setProfileLoading(true);
-      try {
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        if (error) throw error;
-        setProfile(data);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Errore nel caricamento del profilo';
-        toast.error(message);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-    fetchProfile();
-  }, [user]);
-
   const loadArticles = useCallback(async () => {
-    if (!profile?.company_id) return;
+    if (!company?.id) return;
     setArticlesLoading(true);
     try {
       const { data, error } = await supabase
         .from('articles')
         .select('*')
-        .eq('company_id', profile.company_id)
+        .eq('company_id', company.id)
         .order('updated_at', { ascending: false });
       if (error) throw error;
       setArticles(data || []);
@@ -56,13 +36,13 @@ export default function CMSPage() {
     } finally {
       setArticlesLoading(false);
     }
-  }, [profile?.company_id]);
+  }, [company?.id]);
 
   useEffect(() => {
-    if (profile?.company_id) {
+    if (company?.id) {
       loadArticles();
     }
-  }, [profile?.company_id, loadArticles]);
+  }, [company?.id, loadArticles]);
 
   const filteredArticles = useMemo(() => {
     if (!searchTerm) return articles;
@@ -98,7 +78,7 @@ export default function CMSPage() {
     );
   }
 
-  if (!profile?.company_id) {
+  if (!company) {
     return (
       <div className="min-h-screen bg-background">
         <Sidebar />
@@ -163,13 +143,7 @@ export default function CMSPage() {
         </div>
       </main>
 
-      <CMSArticleModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        companyId={profile.company_id}
-        article={selectedArticle}
-        onCompleted={loadArticles}
-      />
+      <CMSArticleModal open={modalOpen} onOpenChange={setModalOpen} article={selectedArticle} onCompleted={loadArticles} />
     </div>
   );
 }

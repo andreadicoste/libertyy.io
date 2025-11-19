@@ -178,14 +178,10 @@ export default function Dashboard() {
           </div>
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <CreateContactModal companyId={company.id} onContactCreated={loadContacts} />
+            <CreateContactModal onContactCreated={loadContacts} />
             <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-end">
               <div className="flex items-center gap-2">
-                <ImportContactsModal
-                  companyId={company.id}
-                  existingContacts={contacts}
-                  onContactsImported={loadContacts}
-                />
+                <ImportContactsModal existingContacts={contacts} onContactsImported={loadContacts} />
                 <ExportButton onExport={handleExport} disabled={contactsLoading} />
                 <FilterMenu filters={filters} onChange={setFilters} />
               </div>
@@ -211,7 +207,6 @@ export default function Dashboard() {
             />
           ) : (
             <ContactsTable
-              companyId={company.id}
               contacts={filteredContacts}
               loading={contactsLoading}
               selectedIds={selectedIds}

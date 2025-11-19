@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,19 +11,19 @@ import { toast } from 'sonner';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { profile, loading } = useProfile();
 
   useEffect(() => {
-    if (user) {
+    if (!loading && profile) {
       navigate('/contatti');
     }
-  }, [user, navigate]);
+  }, [profile, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -38,7 +38,7 @@ export default function Login() {
     } catch (error: any) {
       toast.error(error.message || 'Errore durante il login');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -77,8 +77,8 @@ export default function Login() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Accesso in corso...' : 'Accedi'}
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? 'Accesso in corso...' : 'Accedi'}
             </Button>
           </form>
 

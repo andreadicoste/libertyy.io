@@ -8,7 +8,6 @@ import { type CheckedState } from '@radix-ui/react-checkbox';
 import { STAGE_BADGE_CLASSES, STAGE_LABELS } from '@/constants/stages';
 
 interface ContactsTableProps {
-  companyId: string;
   contacts: Contact[];
   loading: boolean;
   selectedIds: string[];
@@ -22,14 +21,7 @@ const currencyFormatter = new Intl.NumberFormat('it-IT', {
   minimumFractionDigits: 0,
 });
 
-export function ContactsTable({
-  companyId: _companyId,
-  contacts,
-  loading,
-  selectedIds,
-  onSelectionChange,
-  onContactSelect,
-}: ContactsTableProps) {
+export function ContactsTable({ contacts, loading, selectedIds, onSelectionChange, onContactSelect }: ContactsTableProps) {
   const filteredContacts = contacts;
 
   const toggleContactSelection = (contactId: string, checked: CheckedState) => {
