@@ -18,7 +18,7 @@ import { ImportContactsModal } from '@/components/ImportContactsModal';
 import { useProfile } from '@/hooks/useProfile';
 
 export default function Dashboard() {
-  const { profile, loading } = useProfile();
+  const { profile, company, loading: profileLoading } = useProfile();
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactsLoading, setContactsLoading] = useState(true);
@@ -35,13 +35,13 @@ export default function Dashboard() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const loadContacts = useCallback(async () => {
-    if (!profile?.company_id) return;
+    if (!company?.id) return;
     setContactsLoading(true);
     try {
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
-        .eq('company_id', profile.company_id)
+        .eq('company_id', company.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       setContacts(data || []);
@@ -50,13 +50,13 @@ export default function Dashboard() {
     } finally {
       setContactsLoading(false);
     }
-  }, [profile?.company_id]);
+  }, [company?.id]);
 
   useEffect(() => {
-    if (profile?.company_id) {
+    if (company?.id) {
       loadContacts();
     }
-  }, [profile?.company_id, loadContacts]);
+  }, [company?.id, loadContacts]);
 
   const handleContactSelect = (contact: Contact) => {
     setSelectedContact(contact);
@@ -136,7 +136,7 @@ export default function Dashboard() {
     exportContactsToCSV(dataset);
   };
 
-  if (loading) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Sidebar />
@@ -147,7 +147,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!profile?.company_id) {
+  if (!company) {
     return (
       <div className="min-h-screen bg-background">
         <Sidebar />
@@ -178,11 +178,11 @@ export default function Dashboard() {
           </div>
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <CreateContactModal companyId={profile.company_id} onContactCreated={loadContacts} />
+            <CreateContactModal companyId={company.id} onContactCreated={loadContacts} />
             <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-end">
               <div className="flex items-center gap-2">
                 <ImportContactsModal
-                  companyId={profile.company_id}
+                  companyId={company.id}
                   existingContacts={contacts}
                   onContactsImported={loadContacts}
                 />
@@ -211,7 +211,7 @@ export default function Dashboard() {
             />
           ) : (
             <ContactsTable
-              companyId={profile.company_id}
+              companyId={company.id}
               contacts={filteredContacts}
               loading={contactsLoading}
               selectedIds={selectedIds}
