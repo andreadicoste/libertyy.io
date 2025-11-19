@@ -60,8 +60,8 @@ export function CMSArticleModal({ open, onOpenChange, article, onCompleted }: CM
   const [deleteLoading, setDeleteLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { profile } = useProfile();
-  const companyId = profile?.company_id;
+  const { company } = useProfile();
+  const companyId = company?.id ?? null;
 
   const isEdit = Boolean(article);
 

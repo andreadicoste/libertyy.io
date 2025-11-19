@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { ArrowUpToLine } from 'lucide-react';
 
 interface ExportButtonProps {
   onExport: () => void;
@@ -16,7 +16,7 @@ export function ExportButton({ onExport, disabled }: ExportButtonProps) {
       onClick={onExport}
       disabled={disabled}
     >
-      <Download className="h-4 w-4" />
+      <ArrowUpToLine className="h-4 w-4" />
     </Button>
   );
 }

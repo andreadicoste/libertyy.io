@@ -56,7 +56,9 @@ export function Sidebar() {
             <span className="text-sm font-semibold text-neutral-900">
               {profile?.full_name || 'Il tuo profilo'}
             </span>
-            <span className="text-xs text-neutral-500">{profile?.email || 'Gestisci profilo'}</span>
+            <span className="text-xs text-neutral-500">
+              {company?.company_name ? company.company_name.toUpperCase() : 'Gestisci profilo'}
+            </span>
           </div>
         </button>
       </div>

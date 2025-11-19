@@ -1,17 +1,17 @@
 export interface Company {
   id: string;
   company_name: string;
-  created_at?: string;
+  created_at?: string | null;
 }
 
 export interface Profile {
   id: string;
   company_id: string | null;
-  role: string;
+  email: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  role: string | null;
   created_at: string;
-  email?: string | null;
 }
 
 export type ContactStage = 'da contattare' | 'contattato' | 'negoziazione' | 'acquisito' | 'perso';

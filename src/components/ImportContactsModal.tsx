@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { AlertTriangle, CheckCircle2, Download, FileUp, Loader2, Upload, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Download, FileUp, Loader2, Upload, XCircle, ArrowDownToLine } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Contact } from '@/types/database';
 import { ImportCounts, ImportPreviewRow } from '@/types/import';
@@ -49,7 +49,7 @@ export function ImportContactsModal({ existingContacts, onContactsImported }: Im
   const [selectedFileName, setSelectedFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { profile } = useProfile();
+  const { company } = useProfile();
 
   const validRows = useMemo(() => previewRows.filter(row => row.status === 'valid'), [previewRows]);
 
@@ -69,14 +69,14 @@ export function ImportContactsModal({ existingContacts, onContactsImported }: Im
     setParsing(true);
     try {
       setSelectedFileName(file.name);
-      if (!profile?.company_id) {
+      if (!company?.id) {
         toast.error('Nessuna azienda associata');
         setParsing(false);
         return;
       }
       const { rows, counts: newCounts } = await parseContactsCSV({
         file,
-        companyId: profile.company_id,
+        companyId: company.id,
         existingContacts,
       });
 
@@ -117,7 +117,7 @@ export function ImportContactsModal({ existingContacts, onContactsImported }: Im
 
   const handleImport = async () => {
     if (validRows.length === 0) return;
-    if (!profile?.company_id) {
+    if (!company?.id) {
       toast.error('Nessuna azienda associata');
       return;
     }
@@ -160,9 +160,8 @@ export function ImportContactsModal({ existingContacts, onContactsImported }: Im
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" className="gap-2">
-          <Upload className="h-4 w-4" />
-          <span className="hidden sm:inline">Importa</span>
+        <Button type="button" variant="outline" size="icon" aria-label="Importa contatti">
+          <ArrowDownToLine className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-5xl space-y-6">

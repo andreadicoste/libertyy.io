@@ -57,7 +57,8 @@ export function ProfileModal({ open, onOpenChange, profile, company, refreshProf
     setUploading(true);
     try {
       const publicUrl = await uploadAvatar(file, profile.id);
-      setAvatarUrl(publicUrl);
+      const versionedUrl = `${publicUrl}?t=${Date.now()}`;
+      setAvatarUrl(versionedUrl);
       toast.success('Avatar aggiornato, salva per confermare');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Errore durante il caricamento';
@@ -125,7 +126,11 @@ export function ProfileModal({ open, onOpenChange, profile, company, refreshProf
                 </div>
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={avatarUrl || undefined} alt={profile?.full_name || 'Avatar'} />
+                    <AvatarImage
+                      src={avatarUrl || undefined}
+                      alt={profile?.full_name || 'Avatar'}
+                      className="object-cover"
+                    />
                     <AvatarFallback>{initialsFrom(profile?.full_name, profile?.email)}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col gap-2">

@@ -1,20 +1,20 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { profile, loading } = useProfile();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !profile) {
+    if (!loading && !user) {
       navigate('/login');
     }
-  }, [profile, loading, navigate]);
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -24,7 +24,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!profile) {
+  if (!user) {
     return null;
   }
 
