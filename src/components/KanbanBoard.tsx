@@ -1,8 +1,21 @@
-import { Dispatch, SetStateAction, useMemo, useState } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, closestCorners } from '@dnd-kit/core';
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragOverEvent,
+  DragStartEvent,
+  PointerSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+} from '@dnd-kit/core';
 import { Contact, ContactStage } from '@/types/database';
 import { KanbanColumn } from './KanbanColumn';
 import { ContactCard } from './ContactCard';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { STAGES } from '@/constants/stages';
@@ -17,69 +30,95 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ contacts, loading, setContacts, onReloadContacts, onContactSelect }: KanbanBoardProps) {
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { distance: 10 } }),
+    useSensor(PointerSensor),
+  );
 
   const stageIds = useMemo(() => STAGES.map(stage => stage.id), []);
 
-  const isValidStage = (value: string): value is ContactStage => {
-    return stageIds.includes(value as ContactStage);
-  };
+  const isValidStage = useCallback(
+    (value: string): value is ContactStage => stageIds.includes(value as ContactStage),
+    [stageIds],
+  );
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+  const resetDragState = useCallback(() => {
     setActiveContact(null);
+    setActiveId(null);
+    setOverId(null);
+    document.body.style.overflow = 'auto';
+  }, []);
 
-    if (!over || active.id === over.id) return;
+  const getContactsByStage = useCallback(
+    (stage: string) => contacts.filter(contact => contact.stage === stage),
+    [contacts],
+  );
 
-    const contactId = active.id as string;
-    const overId = over.id as string;
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const contact = contacts.find(c => c.id === event.active.id);
+      setActiveContact(contact || null);
+      setActiveId(String(event.active.id));
+      document.body.style.overflow = 'hidden';
+    },
+    [contacts],
+  );
 
-    if (!isValidStage(overId)) {
-      return;
-    }
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    setOverId(event.over ? String(event.over.id) : null);
+  }, []);
 
-    const newStage = overId;
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      resetDragState();
+      if (!over || active.id === over.id) return;
 
-    // Optimistic update
-    setContacts(prev =>
-      prev.map(contact =>
-        contact.id === contactId ? { ...contact, stage: newStage } : contact
-      )
-    );
+      const contactId = String(active.id);
+      const overStage = String(over.id);
+      if (!isValidStage(overStage)) return;
 
-    // Update in database
-    try {
-      const { error } = await supabase
-        .from('contacts')
-        .update({ stage: newStage })
-        .eq('id', contactId);
+      setContacts(prev =>
+        prev.map(contact => (contact.id === contactId ? { ...contact, stage: overStage } : contact)),
+      );
 
-      if (error) throw error;
-      toast.success('Contatto aggiornato');
-    } catch (error: unknown) {
-      toast.error('Errore nell\'aggiornamento');
-      onReloadContacts(); // Reload on error
-    }
-  };
+      try {
+        const { error } = await supabase.from('contacts').update({ stage: overStage }).eq('id', contactId);
+        if (error) throw error;
+        toast.success('Contatto aggiornato');
+      } catch (error) {
+        toast.error("Errore nell'aggiornamento");
+        onReloadContacts();
+      }
+    },
+    [isValidStage, onReloadContacts, resetDragState, setContacts],
+  );
 
-  const handleDragStart = (event: DragEndEvent) => {
-    const contact = contacts.find(c => c.id === event.active.id);
-    setActiveContact(contact || null);
-  };
-
-  const getContactsByStage = (stage: string) => {
-    return contacts.filter(contact => contact.stage === stage);
-  };
+  const handleDragCancel = useCallback(() => {
+    resetDragState();
+  }, [resetDragState]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <div className="text-muted-foreground">Caricamento contatti...</div>
       </div>
     );
   }
 
   return (
-    <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragEnd={handleDragEnd}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragCancel={handleDragCancel}
+    >
       <div className="flex gap-4 overflow-x-auto pb-4">
         {STAGES.map(stage => (
           <KanbanColumn
@@ -88,11 +127,24 @@ export function KanbanBoard({ contacts, loading, setContacts, onReloadContacts, 
             title={stage.title}
             contacts={getContactsByStage(stage.id)}
             onContactSelect={onContactSelect}
+            activeId={activeId}
+            overId={overId}
           />
         ))}
       </div>
 
-      <DragOverlay>{activeContact ? <ContactCard contact={activeContact} /> : null}</DragOverlay>
+      <DragOverlay>
+        {activeContact ? (
+          <div
+            className={cn(
+              'pointer-events-none transform-gpu rounded-lg',
+              'rotate-[-2deg] scale-[1.03] shadow-[0_8px_18px_rgba(0,0,0,0.15)] transition-transform duration-150 ease-out',
+            )}
+          >
+            <ContactCard contact={activeContact} />
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 }

@@ -23,9 +23,10 @@ export function SortableContactCard({ contact, onContactSelect }: SortableContac
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transform: isDragging ? 'none' : CSS.Transform.toString(transform),
+    transition: isDragging ? 'none' : transition,
+    opacity: isDragging ? 0.67 : 1,
+    boxShadow: isDragging ? 'none' : undefined,
   };
 
   const handleClick = () => {
@@ -44,6 +45,7 @@ export function SortableContactCard({ contact, onContactSelect }: SortableContac
     <div
       ref={setNodeRef}
       style={style}
+      className="cursor-grab active:cursor-grabbing"
       {...attributes}
       {...listeners}
       onClick={handleClick}
