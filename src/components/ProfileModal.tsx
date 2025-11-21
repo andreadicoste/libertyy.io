@@ -1,4 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +13,6 @@ import { uploadAvatar } from '@/utils/uploadAvatar';
 import { Camera, Building, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { useNavigate } from 'react-router-dom';
 
 interface ProfileModalProps {
   open: boolean;
@@ -43,7 +45,7 @@ export function ProfileModal({ open, onOpenChange, profile, company, refreshProf
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     if (open && profile) {
@@ -86,7 +88,7 @@ export function ProfileModal({ open, onOpenChange, profile, company, refreshProf
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
+    router.push('/login');
   };
 
   const handleSave = async () => {
