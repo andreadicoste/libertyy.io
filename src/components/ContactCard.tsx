@@ -1,15 +1,28 @@
 import { Contact } from '@/types/database';
 import { Card } from '@/components/ui/card';
-import { Mail, Phone, FileText } from 'lucide-react';
+import { Mail, Phone, FileText, Eye } from 'lucide-react';
 
 interface ContactCardProps {
   contact: Contact;
+  onOpenDetail?: (contact: Contact) => void;
 }
 
-export function ContactCard({ contact }: ContactCardProps) {
+export function ContactCard({ contact, onOpenDetail }: ContactCardProps) {
   return (
-    <Card className="p-4 cursor-move hover:shadow-md transition-shadow bg-card">
-      
+    <Card className="relative p-4 cursor-move hover:shadow-md transition-shadow bg-card">
+      {onOpenDetail && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenDetail(contact);
+          }}
+          className="absolute top-2 right-2 rounded-md bg-white/80 p-1 opacity-60 shadow-sm transition hover:opacity-100"
+        >
+          <Eye className="h-4 w-4 text-neutral-700" />
+        </button>
+      )}
+
       {/* NAME — NO MARGIN BELOW */}
       <h3 className="font-semibold text-card-foreground mb-0">
         {contact.name}

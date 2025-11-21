@@ -34,9 +34,15 @@ export function KanbanBoard({ contacts, loading, setContacts, onReloadContacts, 
   const [overId, setOverId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor, { activationConstraint: { distance: 10 } }),
-    useSensor(PointerSensor),
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
   );
 
   const stageIds = useMemo(() => STAGES.map(stage => stage.id), []);

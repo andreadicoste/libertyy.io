@@ -53,7 +53,7 @@ export function SortableContactCard({ contact, onContactSelect }: SortableContac
       role="button"
       tabIndex={0}
     >
-      <ContactCard contact={contact} />
+      <ContactCard contact={contact} onOpenDetail={onContactSelect} />
     </div>
   );
 }
