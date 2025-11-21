@@ -32,6 +32,7 @@ export function KanbanBoard({ contacts, loading, setContacts, onReloadContacts, 
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -120,12 +121,27 @@ export function KanbanBoard({ contacts, loading, setContacts, onReloadContacts, 
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      onDragEnd={handleDragEnd}
-      onDragStart={handleDragStart}
+      onDragEnd={(event) => {
+        setIsDragging(false);
+        handleDragEnd(event);
+      }}
+      onDragStart={(event) => {
+        setIsDragging(true);
+        handleDragStart(event);
+      }}
       onDragOver={handleDragOver}
-      onDragCancel={handleDragCancel}
+      onDragCancel={() => {
+        setIsDragging(false);
+        handleDragCancel();
+      }}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div
+        className="flex gap-4 overflow-x-auto pb-4"
+        style={{
+          touchAction: isDragging ? 'none' : 'pan-y',
+          overflowX: isDragging ? 'hidden' : 'auto',
+        }}
+      >
         {STAGES.map(stage => (
           <KanbanColumn
             key={stage.id}
