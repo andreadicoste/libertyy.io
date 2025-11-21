@@ -45,3 +45,16 @@ export interface Article {
   created_at: string;
   updated_at: string;
 }
+
+export interface Site {
+  id: string;
+  company_id: string;
+  site_url: string;
+  project_name: string;
+  primary_domain: string;
+  analytics_tracking: string | null;
+  created_at: string;
+  updated_at: string;
+  last_publish: string | null;
+  status: string;
+}

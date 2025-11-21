@@ -168,7 +168,7 @@ export default function Dashboard() {
         <div className="space-y-8 p-8">
           <div className="space-y-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Contatti</p>
+              <p className="text-xs uppercase text-neutral-500">Contatti</p>
               <h1 className="mt-2 text-3xl font-semibold text-foreground">Gestisci la pipeline o la tabella contatti</h1>
             </div>
             <ViewToggle value={viewMode} onChange={setViewMode} />

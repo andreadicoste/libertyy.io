@@ -11,8 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 
-export default function CMSPage() {
-  const { profile, company, loading: profileLoading } = useProfile();
+export default function SiteContents() {
+  const { company, loading: profileLoading } = useProfile();
   const [articles, setArticles] = useState<Article[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -99,8 +99,8 @@ export default function CMSPage() {
         <div className="space-y-8 p-8">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Sito web</p>
-            <h1 className="text-3xl font-semibold text-foreground">Gestisci i contenuti del sito</h1>
-            <p className="text-muted-foreground">Articoli del blog</p>
+            <h1 className="text-3xl font-semibold text-foreground">Contenuti</h1>
+            <p className="text-muted-foreground">Gestisci gli articoli del blog</p>
           </div>
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

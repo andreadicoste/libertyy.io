@@ -7,7 +7,8 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import CMS from "./pages/CMS";
+import SiteDashboard from "./pages/SiteDashboard";
+import SiteContents from "./pages/SiteContents";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -32,10 +33,18 @@ const App = () => (
             }
           />
           <Route
-            path="/sito-web"
+            path="/sito-web/dashboard"
             element={
               <ProtectedRoute>
-                <CMS />
+                <SiteDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sito-web/contenuti"
+            element={
+              <ProtectedRoute>
+                <SiteContents />
               </ProtectedRoute>
             }
           />
