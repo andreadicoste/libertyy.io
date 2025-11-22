@@ -1,0 +1,1 @@
+self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/andreadicoste/Documents/GitHub/liberty-crm/app/layout\":[\"static/media/f3f7e95f2dbc4fe4-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"

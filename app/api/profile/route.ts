@@ -1,34 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteSupabase } from '@/lib/supabase-server';
+import { supabaseServer } from 'lib/supabase-server';
 
 const PROFILE_COLUMNS = 'id, company_id, email, full_name, avatar_url, role, created_at';
+const COMPANY_COLUMNS = 'id, company_name, user_id, site_url, ga_measurement_id';
 
 async function ensureCompanyForProfile(
-  supabase: ReturnType<typeof createRouteSupabase>,
+  supabase: ReturnType<typeof supabaseServer>,
   profileId: string,
   fullName?: string | null,
 ) {
   const defaultName = fullName?.trim() ? `${fullName.trim()} - Azienda` : 'Nuova azienda';
+
   const { data: insertedCompany, error: insertError } = await supabase
     .from('companies')
-    .insert({ company_name: defaultName })
-    .select('id, company_name, created_at')
+    .insert({
+      company_name: defaultName,
+      user_id: profileId,
+      site_url: null,
+      ga_measurement_id: null,
+    })
+    .select(COMPANY_COLUMNS)
     .single();
 
   if (insertError) throw insertError;
 
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({ company_id: insertedCompany.id })
-    .eq('id', profileId);
-
+  const { error: updateError } = await supabase.from('profiles').update({ company_id: insertedCompany.id }).eq('id', profileId);
   if (updateError) throw updateError;
 
   return insertedCompany;
 }
 
 export async function GET() {
-  const supabase = createRouteSupabase();
+  const supabase = supabaseServer();
   const {
     data: { session },
     error: sessionError,
@@ -72,7 +75,7 @@ export async function GET() {
   if (normalizedProfile.company_id) {
     const { data: companyData, error: companyError } = await supabase
       .from('companies')
-      .select('id, company_name, created_at')
+      .select(COMPANY_COLUMNS)
       .eq('id', normalizedProfile.company_id)
       .maybeSingle();
 
@@ -94,7 +97,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const supabase = createRouteSupabase();
+  const supabase = supabaseServer();
   const {
     data: { user },
     error: userError,
@@ -109,6 +112,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const payload = await request.json();
+
   const updates: Record<string, string | null | undefined> = {};
   if (payload.full_name !== undefined) updates.full_name = payload.full_name;
   if (payload.avatar_url !== undefined) updates.avatar_url = payload.avatar_url;

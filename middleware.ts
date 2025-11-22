@@ -1,37 +1,46 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./lib/supabase-constants";
 
-const PUBLIC_PATHS = ['/login', '/signup', '/api'];
+const PUBLIC_ROUTES = ['/login', '/signup'];
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next({ request: { headers: req.headers } });
-  const supabase = createMiddlewareClient({ req, res });
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
   const pathname = req.nextUrl.pathname;
-  const isPublic = PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`));
 
-  if (!session && !isPublic) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/login';
-    redirectUrl.search = '';
-    return NextResponse.redirect(redirectUrl);
+  if (PUBLIC_ROUTES.includes(pathname)) {
+    return NextResponse.next();
   }
 
-  if (session && (pathname === '/login' || pathname === '/signup')) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/contatti';
-    redirectUrl.search = '';
-    return NextResponse.redirect(redirectUrl);
+  const res = NextResponse.next();
+
+  const supabase = createServerClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          res.cookies.set({ name, value, ...options });
+        },
+        remove(name: string) {
+          res.cookies.delete(name);
+        },
+      },
+    }
+  );
+
+  const { data: userData, error } = await supabase.auth.getUser();
+
+  if (error || !userData.user) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
   return res;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'],
+  matcher: ['/app/:path*'],
 };

@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
-import { Inter, Sora } from 'next/font/google';
 import './globals.css';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from 'components/ui/sonner';
+import { Sora } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const sora = Sora({ subsets: ['latin'], variable: '--font-sora' });
+const sora = Sora({
+  subsets: ['latin'],
+  variable: '--font-sora',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
 
 export const metadata: Metadata = {
   title: 'libertyy.io',
@@ -14,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
-      <body className={`${inter.variable} ${sora.variable} antialiased bg-background text-foreground`}>
+      <body className={`${sora.variable} antialiased bg-background text-foreground font-sans`}>
         {children}
         <Toaster richColors closeButton />
       </body>
