@@ -1,5 +1,4 @@
 {
-  "/api/profile/route": "app/api/profile/route.js",
   "/app/contacts/page": "app/app/contacts/page.js",
   "/app/site/dashboard/page": "app/app/site/dashboard/page.js"
 }

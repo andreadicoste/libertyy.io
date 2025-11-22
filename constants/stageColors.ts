@@ -1,6 +1,6 @@
 import { ContactStage } from 'types/database';
 
-export const STAGE_COLORS: Record<ContactStage, { bg: string; text: string; border: string }> = {
+export const STAGE_COLORS: Record<ContactStage, { bg: string; text: string; border: string; solid?: string }> = {
   'da contattare': {
     bg: 'bg-blue-100',
     text: 'text-blue-700',
