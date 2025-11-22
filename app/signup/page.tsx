@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabaseBrowser } from 'lib/supabase-browser';
 import { useAuth } from 'hooks/useAuth';
 import { Button } from 'components/ui/button';
 import { Input } from 'components/ui/input';
@@ -12,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'compo
 import { toast } from 'sonner';
 
 export default function SignupPage() {
-  const supabase = supabaseBrowser();
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
@@ -38,57 +36,23 @@ export default function SignupPage() {
         return;
       }
 
-      const redirectUrl = `${window.location.origin}/app/contacts`;
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-            company_name: companyName.trim(),
-          },
-          emailRedirectTo: redirectUrl,
-        },
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName: fullName.trim(),
+          companyName: companyName.trim(),
+        }),
       });
 
-      if (error) throw error;
-
-      const userId = data.user?.id;
-      const userEmail = data.user?.email ?? email;
-
-      if (userId) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert(
-            {
-              id: userId,
-              email: userEmail,
-              full_name: fullName.trim(),
-              avatar_url: null,
-              role: 'member',
-              company_id: null,
-              created_at: new Date().toISOString(),
-            },
-            { onConflict: 'id' },
-          );
-        if (profileError) throw profileError;
-
-        const { data: companyInsert, error: companyError } = await supabase
-          .from('companies')
-          .insert({ company_name: companyName.trim(), user_id: userId })
-          .select('id')
-          .single();
-        if (companyError) throw companyError;
-
-        const { error: profileUpdateError } = await supabase
-          .from('profiles')
-          .update({ company_id: companyInsert.id })
-          .eq('id', userId);
-        if (profileUpdateError) throw profileUpdateError;
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Errore durante la registrazione');
       }
 
-      toast.success("Registrazione completata! Verifica la tua email per confermare l'account.");
+      toast.success("Registrazione completata! Ora puoi accedere.");
       router.push('/login');
     } catch (error: any) {
       if (error.message?.includes('already registered')) {
